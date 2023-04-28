@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import ru.naumen.dev.component.ReadFromFile;
@@ -58,13 +57,15 @@ public class ApiController {
     @Operation(summary = "Вывод статистики",
             description = "Вывод статистики",
             operationId = "stats")
-    public Map<String, Object> getStats() {
-        Map<String, Object> stats = new HashMap<>();
+    public List<Map<String, Object>> getStats() {
+        List<Map<String,Object>> response = new ArrayList<>();
         for (User user : users) {
+            Map<String, Object> stats = new HashMap<>();
             stats.put("Name", user.getFirstName());
             stats.put("Request count", user.getRequestCount());
+            response.add(stats);
         }
-        return stats;
+        return response;
     }
 
     @GetMapping("/stats/max-age")
