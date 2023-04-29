@@ -47,10 +47,14 @@ public class ApiController {
             map.put("Age", age);
         } else {
             if (restTemplate.getForObject(url, Map.class).get("age") == null) {
-                map.put("Age", "Не указано");
+                Random random = new Random();
+                int age = random.nextInt(61)+19;
+                map.put("Age", age);
+                users.add(new User(name, age));
             } else {
                 int age = (Integer) restTemplate.getForObject(url, Map.class).get("age");
                 map.put("Age", age);
+                users.add(new User(name, age));
             }
         }
         return map;
