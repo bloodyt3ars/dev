@@ -81,9 +81,7 @@ public class ApiController {
         if (userWithMaxAge.isPresent()) {
             User user = userWithMaxAge.get();
             stats.put("Name", user.getFirstName());
-            stats.put("Max age", user.getAge());
-        } else {
-            stats.put("Response", "No users found.");
+            stats.put("Age", user.getAge());
         }
         return stats;
     }
