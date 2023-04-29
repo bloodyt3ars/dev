@@ -33,6 +33,9 @@ public class ApiController {
             operationId = "getAge")
     public Map<String, Object> getAge(@RequestParam @Parameter(name = "Name", description = "Имя") String name) {
         Map<String, Object> map = new HashMap<>();
+        if (name.equals("")){
+            return map;
+        }
         if (stats.containsKey(name)) {
             stats.put(name, stats.get(name) + 1);
         } else {
