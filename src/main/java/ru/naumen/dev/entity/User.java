@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 public class User {
     private String firstName;
     private int age;
-    private int requestCount;
 
 
     public User() {
@@ -34,11 +33,4 @@ public class User {
         this.age = age;
     }
 
-    public int getRequestCount() {
-        return requestCount;
-    }
-
-    public void setRequestCount(int requestCount) {
-        this.requestCount = requestCount;
-    }
 }

@@ -17,12 +17,14 @@ import java.util.*;
 public class ApiController {
 
     private List<User> users;
+    private Map<String, Integer> stats;
 
     private String path = "src/main/resources/name_age.txt";
 
     @PostConstruct
     public void init() {
         users = ReadFromFile.read(path);
+        stats = new HashMap<>();
     }
 
     @GetMapping("/name")
@@ -30,26 +32,27 @@ public class ApiController {
             description = "Вывод возраста по имени",
             operationId = "getAge")
     public Map<String, Object> getAge(@RequestParam @Parameter(name = "Name", description = "Имя") String name) {
+        Map<String, Object> map = new HashMap<>();
+        if (stats.containsKey(name)) {
+            stats.put(name, stats.get(name) + 1);
+        } else {
+            stats.put(name, 1);
+        }
         String url = "https://api.agify.io/?name=" + name;
         RestTemplate restTemplate = new RestTemplate();
         Optional<User> user = users.stream().filter(u -> u.getFirstName().equals(name)).findFirst();
-        if (user.isPresent()) {
-            user.get().setRequestCount(user.get().getRequestCount() + 1);
-        }
-        Object ageFromQuery = restTemplate.getForObject(url, Map.class).get("age");
-        int queryAge;
-        if (ageFromQuery==null){
-            queryAge = 0;
-        }
-        else {
-            queryAge = (int) ageFromQuery;
-        }
-        int age = user.map(User::getAge).orElse(
-                queryAge
-        );
-        Map<String, Object> map = new HashMap<>();
         map.put("Name", name);
-        map.put("Age", age);
+        if (user.isPresent()) {
+            int age = user.map(User::getAge).orElse(null);
+            map.put("Age", age);
+        } else {
+            if (restTemplate.getForObject(url, Map.class).get("age") == null) {
+                map.put("Age", "Не указано");
+            } else {
+                int age = (Integer) restTemplate.getForObject(url, Map.class).get("age");
+                map.put("Age", age);
+            }
+        }
         return map;
     }
 
@@ -58,11 +61,11 @@ public class ApiController {
             description = "Вывод статистики",
             operationId = "stats")
     public List<Map<String, Object>> getStats() {
-        List<Map<String,Object>> response = new ArrayList<>();
-        for (User user : users) {
+        List<Map<String, Object>> response = new ArrayList<>();
+        for (Map.Entry<String, Integer> stat : stats.entrySet()) {
             Map<String, Object> stats = new HashMap<>();
-            stats.put("Name", user.getFirstName());
-            stats.put("Request count", user.getRequestCount());
+            stats.put("Name", stat.getKey());
+            stats.put("Request count", stat.getValue());
             response.add(stats);
         }
         return response;
@@ -75,12 +78,11 @@ public class ApiController {
     public Map<String, Object> getMaxAge() {
         Map<String, Object> stats = new HashMap<>();
         Optional<User> userWithMaxAge = users.stream().max(Comparator.comparing(User::getAge));
-        if (userWithMaxAge.isPresent()){
+        if (userWithMaxAge.isPresent()) {
             User user = userWithMaxAge.get();
             stats.put("Name", user.getFirstName());
             stats.put("Max age", user.getAge());
-        }
-        else {
+        } else {
             stats.put("Response", "No users found.");
         }
         return stats;
